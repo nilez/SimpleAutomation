@@ -40,14 +40,14 @@ namespace SimpleAutomation.Tests
         public void OnSubmitting_ContactUs_ShouldSubmitWithCorrectValues()
         {
             ContactUsViewModel toSend = new ContactUsViewModel() { Name = "j.Bloggs 6", Email = "j.Bloggs@qaworks.com", Message = "please contact me I want to find out more" };
-            contactUsTestTemplate.SubmitDetails(toSend);
+            contactUsTestTemplate.SubmitValidDetails(toSend);
         }
 
         [TestMethod]
         [TestCategory("Chrome - ContactUs")]
-        public void OnSubmitting_ContactUs_ShouldFaileForInvalidEmailValue() {
+        public void OnSubmitting_ContactUs_ShouldFailForInvalidEmailValue() {
             ContactUsViewModel toSend = new ContactUsViewModel() { Name = "J Name", Email = "j.Bloggsqaworks.com", Message = "a message" };
-            contactUsTestTemplate.SubmitDetails(toSend);
+            contactUsTestTemplate.SubmitInvalidDetails(toSend);
         }
 
         [TestCleanup]

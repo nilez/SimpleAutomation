@@ -22,35 +22,32 @@ namespace SimpleAutomation.Library
 
         }
 
-        public void NavidateToContactUs() {
+        public void NavidateToContactUs()
+        {
             browserSpecificDriver.Navigate();
         }
-        public void SubmitDetails(ContactUsViewModel toSend) {
+        public void SubmitInvalidDetails(ContactUsViewModel toSend)
+        {
+            SubmitDetails(false, toSend);
+        }
 
-            #region For a form with lot of elements we can dynamically chcek the elements
-            //List<string> names = new List<string>(new string[] { "ctl00_MainContent_NameBox", "ctl00_MainContent_EmailBox", "ctl00_MainContent_MessageBox", "ContactForm" });
+        public void SubmitValidDetails(ContactUsViewModel toSend)
+        {
+            SubmitDetails(true, toSend);
+        }
 
-            //var elements = names.Select(n => driver.FindElement(By.Id(n)));
-
-            //if (elements.All(e => e != null))
-            //{
-
-            //}                
-            //else {
-            //    var missingElements = names.Except(elements.Where(x => x != null).Select(x => x.TagName)).Aggregate((i, j) => i + ", " + j);
-            //    throw new NoSuchElementException(string.Format("One or more elements of the contact form are missing : {0}", missingElements));
-            //}
-            #endregion
-
-            IWebElement eleForm = browserSpecificDriver.FindElement(By.Id("ContactForm"));
-            if (eleForm == null)
+        private void SubmitDetails(bool valid, ContactUsViewModel toSend)
+        {
+            IWebElement eleForm = browserSpecificDriver.FindElement(By.Id("aspnetForm"));
+            if (eleForm == null || (eleForm != null && eleForm.TagName.ToLower() != "form"))
             {
-                Assert.Fail(string.Format("Unable to locate Contact Us form: {0}", "ContactForm"));
+                Assert.Fail(string.Format("Unable to locate Contact Us form: {0}", "aspnetForm"));
             }
-            IWebElement eleName = browserSpecificDriver.FindElement(By.Id("ctl00_MainContent_NameBox"));
-            IWebElement eleMessage = browserSpecificDriver.FindElement(By.Id("ctl00_MainContent_MessageBox"));
-            IWebElement eleEmail = browserSpecificDriver.FindElement(By.Id("ctl00_MainContent_EmailBox"));
-            IWebElement eleSend = browserSpecificDriver.FindElement(By.Id("ctl00_MainContent_SendButton"));
+            
+            IWebElement eleName = eleForm.FindElement(By.Id("ctl00_MainContent_NameBox"));
+            IWebElement eleMessage = eleForm.FindElement(By.Id("ctl00_MainContent_MessageBox"));
+            IWebElement eleEmail = eleForm.FindElement(By.Id("ctl00_MainContent_EmailBox"));
+            IWebElement eleSend = eleForm.FindElement(By.Id("ctl00_MainContent_SendButton"));
             if (eleName != null && eleEmail != null & eleMessage != null && eleSend != null)
             {
                 eleName.SendKeys(toSend.Name);
@@ -60,21 +57,24 @@ namespace SimpleAutomation.Library
                 // Added wait for JS validation to kick in as, the page submits despite invalid email address.
                 Thread.Sleep(500);
 
-                IWebElement eleInvalidEmailSpan = browserSpecificDriver.FindElement(By.Id("ctl00_MainContent_revEmailAddress"));
+                IWebElement eleInvalidEmailSpan = eleForm.FindElement(By.Id("ctl00_MainContent_revEmailAddress"));
                 string styleValue = eleInvalidEmailSpan.GetAttribute("style");
-                if (!styleValue.ToLower().Contains("visibility: visible"))
+                if ( valid && styleValue.ToLower().Contains("visibility: visible"))
                 {
                     Assert.Fail("Javascript Validation for invalid email failed.");
                 }
 
-                eleSend.Click();                
+                eleSend.Click();
             }
             else
             {
-                Assert.Fail(string.Format("One or more elements missing from the form: {0}", "ContactForm"));
+                Assert.Fail(string.Format("One or more elements missing from the form: {0}", "aspnetForm"));
             }
         }
 
-        public void CleanUp() { }
+        public void CleanUp()
+        {
+            browserSpecificDriver.Close();
+        }
     }
 }
